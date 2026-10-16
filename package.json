@@ -1,0 +1,9 @@
+{
+  "name": "yaatra",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Yaatra — social travel platform prototype (see spec.md)",
+  "scripts": {
+    "start": "npx --yes serve app -l 8080"
+  }
+}

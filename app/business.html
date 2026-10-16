@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Yaatra — Business Portal</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<main>
+  <div class="page-head">
+    <h1>Business Portal</h1>
+    <p>For hotels, restaurants and local guides: claim your listing, keep details current and reply to travelers.</p>
+  </div>
+
+  <div class="grid grid-4" style="margin-bottom:1rem">
+    <div class="card stat"><b>2,481</b><span class="muted">Listing views (30d)</span></div>
+    <div class="card stat"><b>312</b><span class="muted">Saves</span></div>
+    <div class="card stat"><b>148</b><span class="muted">Added to trips</span></div>
+    <div class="card stat"><b>96</b><span class="muted">Clicks to book</span></div>
+  </div>
+
+  <div class="grid grid-2">
+    <form class="card" id="claimForm">
+      <h2>Claim or update a listing</h2>
+      <div class="field"><label>Business name</label><input name="name" required placeholder="Temple View Residency"></div>
+      <div class="form-row">
+        <div class="field"><label>Category</label>
+          <select name="category"><option>Hotel</option><option>Restaurant</option><option>Tour / Guide</option><option>Transport</option></select></div>
+        <div class="field"><label>Destination</label><input name="dest" value="Thiruvannamalai"></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>Phone</label><input name="phone" type="tel"></div>
+        <div class="field"><label>GST number (optional)</label><input name="gst"></div>
+      </div>
+      <div class="field"><label>Opening hours</label><input name="hours" placeholder="7:00 AM – 10:00 PM"></div>
+      <button class="btn">Submit for verification</button>
+    </form>
+
+    <div class="card">
+      <h2>Recent reviews</h2>
+      <ul class="list">
+        <li><b>★★★★★ Lakshmi S</b><p>Clean rooms and walking distance to the temple. Staff helped with darshan tickets.</p>
+          <button class="btn btn-outline btn-sm" onclick="toast('Reply posted (prototype)')">Reply</button></li>
+        <li><b>★★★★☆ Ravi M</b><p>Good value. Parking is tight during Pournami.</p>
+          <button class="btn btn-outline btn-sm" onclick="toast('Reply posted (prototype)')">Reply</button></li>
+      </ul>
+    </div>
+  </div>
+</main>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  document.getElementById("claimForm").onsubmit = e => {
+    e.preventDefault();
+    e.target.reset();
+    toast("Submitted — we'll verify within 2 working days");
+  };
+</script>
+</body>
+</html>

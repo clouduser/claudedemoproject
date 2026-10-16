@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Yaatra — Destination</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<main>
+  <p><a href="explore.html">← All destinations</a></p>
+  <section class="hero" id="hero"></section>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="stays">🏨 Stays</button>
+    <button class="tab" data-tab="food">🍛 Food</button>
+    <button class="tab" data-tab="sights">📍 Sightseeing</button>
+    <button class="tab" data-tab="travel">🚆 Getting there</button>
+    <button class="tab" data-tab="community">💬 Community</button>
+  </div>
+
+  <div class="tab-panel active" id="stays">
+    <div class="row" style="margin-bottom:1rem">
+      <select id="stayType" style="width:auto"><option value="">All stay types</option></select>
+      <label class="row" style="margin:0"><input type="checkbox" id="pureVeg" style="width:auto"> Pure veg only</label>
+    </div>
+    <div class="grid grid-3" id="hotelList"></div>
+  </div>
+  <div class="tab-panel" id="food"><div class="grid grid-3" id="foodList"></div></div>
+  <div class="tab-panel" id="sights"><div class="grid grid-3" id="sightList"></div></div>
+  <div class="tab-panel" id="travel">
+    <div class="card">
+      <p class="notice">Indicative durations and fares. Live search and booking come from partner APIs (spec §4.4.4).</p>
+      <table><thead><tr><th>From</th><th>Mode</th><th>Duration</th><th>Cost</th><th>Frequency</th><th></th></tr></thead>
+        <tbody id="travelRows"></tbody></table>
+    </div>
+  </div>
+  <div class="tab-panel" id="community">
+    <div class="grid grid-2">
+      <div class="stack" id="destPosts"></div>
+      <div class="card"><h3>Questions & answers</h3><ul class="list" id="qa"></ul></div>
+    </div>
+  </div>
+</main>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  const id = new URLSearchParams(location.search).get("id") || "thiruvannamalai";
+  const d = DESTINATIONS.find(x => x.id === id) || DESTINATIONS[0];
+  const P = PLACES[d.id] || { hotels: [], food: [], sights: [], transport: [] };
+  document.title = "Yaatra — " + d.name;
+  const add = obj => `<button class="btn btn-outline btn-sm" onclick='addToTrip(${JSON.stringify({ ...obj, destination: d.name }).replace(/'/g, "&#39;")})'>＋ Add to trip</button>`;
+  const empty = what => `<div class="card empty">No ${what} listed yet for ${d.name}.</div>`;
+
+  document.getElementById("hero").innerHTML = `
+    <h1>${d.emoji} ${d.name}</h1>
+    <p>${d.summary}</p>
+    <div class="row"><span class="chip">${d.region}</span><span class="chip">Best: ${d.bestSeason}</span>${d.tags.map(t => `<span class="chip">${t}</span>`).join("")}</div>
+    ${d.guide ? `<p style="margin-top:1rem"><a class="btn" href="${d.guide}">Open full temple & history guide →</a></p>` : ""}`;
+
+  const types = [...new Set(P.hotels.map(h => h.type))];
+  document.getElementById("stayType").innerHTML += types.map(t => `<option>${t}</option>`).join("");
+
+  function renderHotels() {
+    const type = document.getElementById("stayType").value;
+    const veg = document.getElementById("pureVeg").checked;
+    const list = P.hotels.filter(h => (!type || h.type === type) && (!veg || h.tags.includes("Pure veg")));
+    document.getElementById("hotelList").innerHTML = list.map(h => `
+      <div class="card">
+        <div class="row spread"><h3>${h.name}</h3><span class="chip chip-green">★ ${h.rating}</span></div>
+        <p class="muted">${h.type} · ${h.distance}</p>
+        <p><b>${h.price}</b></p>
+        <div class="row" style="margin-bottom:.75rem">${h.tags.map(t => `<span class="chip">${t}</span>`).join("")}</div>
+        <div class="row">${add({ type: "stay", name: h.name })}<button class="btn btn-sm" onclick="toast('Opens partner booking site (prototype)')">Check prices</button></div>
+      </div>`).join("") || empty("stays");
+  }
+  document.getElementById("stayType").onchange = renderHotels;
+  document.getElementById("pureVeg").onchange = renderHotels;
+  renderHotels();
+
+  document.getElementById("foodList").innerHTML = P.food.map(f => `
+    <div class="card">
+      <div class="row spread"><h3>${f.name}</h3><span class="chip chip-green">★ ${f.rating}</span></div>
+      <p class="muted">${f.cuisine} · ${f.price}</p>
+      <p>${f.veg ? '<span class="chip chip-green">Pure veg</span>' : '<span class="chip chip-orange">Veg & non-veg</span>'}</p>
+      <p>🍽 Must try: ${f.mustTry}</p>
+      ${add({ type: "meal", name: f.name })}
+    </div>`).join("") || empty("food spots");
+
+  document.getElementById("sightList").innerHTML = P.sights.map(s => `
+    <div class="card">
+      <div class="card-media">${s.emoji}</div>
+      <h3>${s.name}</h3>
+      <p class="muted">${s.type} · ${s.time}</p>
+      <p>🕒 ${s.hours}<br>🎟 ${s.fee}</p>
+      ${add({ type: s.type === "Temple" ? "temple" : "place", name: s.name })}
+    </div>`).join("") || empty("sights");
+
+  document.getElementById("travelRows").innerHTML = P.transport.map(t => `
+    <tr><td>${t.from}</td><td>${t.mode}</td><td>${t.duration}</td><td>${t.cost}</td><td>${t.freq}</td>
+    <td>${add({ type: "transport", name: `${t.mode} from ${t.from}` })}</td></tr>`).join("")
+    || `<tr><td colspan="6" class="muted">No travel options yet.</td></tr>`;
+
+  document.getElementById("destPosts").innerHTML = POSTS.filter(p => p.destination === d.name).map(postCard).join("") || empty("stories");
+  document.getElementById("qa").innerHTML = (d.id === "thiruvannamalai" ? QA : []).map(x => `
+    <li><b>Q: ${x.q}</b><br>${x.a}<div class="muted">▲ ${x.votes} helpful</div></li>`).join("") || `<li class="muted">No questions yet.</li>`;
+</script>
+</body>
+</html>

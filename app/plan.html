@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Yaatra — Plan Trips</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<main>
+  <div class="page-head row spread">
+    <div>
+      <h1>Plan Trips</h1>
+      <p>Build day-by-day itineraries, track your budget and plan with companions.</p>
+    </div>
+    <button class="btn" id="newTripBtn">＋ New trip</button>
+  </div>
+
+  <div class="layout-side">
+    <section>
+      <!-- New trip form -->
+      <div class="card" id="newTripCard" hidden>
+        <h2>Create a trip</h2>
+        <form id="tripForm">
+          <div class="field"><label>Trip title</label><input name="title" required placeholder="Weekend in Thiruvannamalai"></div>
+          <div class="form-row">
+            <div class="field"><label>Destination</label>
+              <select name="destination" id="destSelect"></select></div>
+            <div class="field"><label>Start date</label><input type="date" name="start"></div>
+            <div class="field"><label>Days</label><input type="number" name="days" min="1" max="30" value="2"></div>
+          </div>
+          <div class="form-row">
+            <div class="field"><label>Travelers</label><input type="number" name="travelers" min="1" value="2"></div>
+            <div class="field"><label>Budget (₹)</label><input type="number" name="budget" min="0" value="10000"></div>
+            <div class="field"><label>Style</label>
+              <select name="style"><option>Budget</option><option selected>Comfort</option><option>Luxury</option></select></div>
+          </div>
+          <div class="row">
+            <button class="btn" type="submit">Create trip</button>
+            <button class="btn btn-ghost" type="button" id="cancelTrip">Cancel</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Itinerary -->
+      <div id="itinerary"></div>
+    </section>
+
+    <aside class="stack">
+      <div class="card">
+        <h3>My trips</h3>
+        <ul class="list" id="tripList"></ul>
+      </div>
+      <div class="card" id="budgetCard" hidden>
+        <h3>Budget</h3>
+        <div id="budget"></div>
+      </div>
+      <div class="card" id="membersCard" hidden>
+        <h3>Travel companions</h3>
+        <ul class="list" id="members"><li>👤 You (Owner)</li></ul>
+        <form class="row" id="inviteForm" style="margin-top:.5rem">
+          <input name="who" placeholder="@handle or phone" style="flex:1">
+          <button class="btn btn-sm">Invite</button>
+        </form>
+      </div>
+      <div class="card" id="checklistCard" hidden>
+        <h3>Checklist</h3>
+        <ul class="list" id="checklist"></ul>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  const $ = id => document.getElementById(id);
+  const params = new URLSearchParams(location.search);
+  if (params.get("trip")) store.set("activeTrip", params.get("trip"));
+
+  $("destSelect").innerHTML = DESTINATIONS.map(d => `<option>${d.name}</option>`).join("");
+  $("newTripBtn").onclick = () => { $("newTripCard").hidden = false; };
+  $("cancelTrip").onclick = () => { $("newTripCard").hidden = true; };
+
+  $("tripForm").onsubmit = e => {
+    e.preventDefault();
+    const f = Object.fromEntries(new FormData(e.target));
+    createTrip(f);
+    e.target.reset();
+    $("newTripCard").hidden = true;
+    toast("Trip created");
+    render();
+  };
+
+  function activeTrip() {
+    const trips = getTrips();
+    return trips.find(t => t.id === store.get("activeTrip")) || trips[0];
+  }
+
+  function updateTrip(fn) {
+    const trips = getTrips();
+    const t = trips.find(x => x.id === activeTrip().id);
+    fn(t);
+    saveTrips(trips);
+    render();
+  }
+
+  function itemRow(item, dayIdx, idx) {
+    return `
+      <div class="item">
+        <span class="item-icon">${ITEM_ICONS[item.type] || "📍"}</span>
+        <div class="item-body">
+          <b>${escapeHtml(item.name)}</b>
+          <div class="muted">${item.time ? "🕒 " + escapeHtml(item.time) : "No time set"}${item.cost ? " · ₹" + item.cost : ""}${item.note ? " · " + escapeHtml(item.note) : ""}</div>
+        </div>
+        ${dayIdx === "ideas"
+          ? `<select class="btn-sm" style="width:auto" onchange="scheduleIdea(${idx}, this.value)">
+               <option value="">Move to…</option>
+               ${activeTrip().days.map((_, i) => `<option value="${i}">Day ${i + 1}</option>`).join("")}
+             </select>`
+          : ""}
+        <button class="btn btn-ghost btn-sm" title="Remove" onclick="removeItem('${dayIdx}', ${idx})">✕</button>
+      </div>`;
+  }
+
+  function addItemForm(dayIdx) {
+    return `
+      <form class="form-row" onsubmit="addItem(event, ${dayIdx})" style="margin-top:.25rem">
+        <select name="type">
+          <option value="place">📍 Place</option><option value="temple">🛕 Temple</option>
+          <option value="meal">🍛 Meal</option><option value="stay">🏨 Stay</option>
+          <option value="transport">🚆 Transport</option><option value="note">📝 Note</option>
+        </select>
+        <input name="name" placeholder="What?" required>
+        <input name="time" type="time">
+        <input name="cost" type="number" min="0" placeholder="Cost ₹">
+        <button class="btn btn-outline btn-sm">Add</button>
+      </form>`;
+  }
+
+  window.addItem = (e, dayIdx) => {
+    e.preventDefault();
+    const f = Object.fromEntries(new FormData(e.target));
+    updateTrip(t => {
+      t.days[dayIdx].items.push({ id: uid(), type: f.type, name: f.name, time: f.time, cost: Number(f.cost) || 0 });
+      t.days[dayIdx].items.sort((a, b) => (a.time || "99").localeCompare(b.time || "99"));
+    });
+  };
+  window.removeItem = (dayIdx, idx) => updateTrip(t => {
+    (dayIdx === "ideas" ? t.ideas : t.days[dayIdx].items).splice(idx, 1);
+  });
+  window.scheduleIdea = (idx, day) => {
+    if (day === "") return;
+    updateTrip(t => { t.days[day].items.push(t.ideas.splice(idx, 1)[0]); });
+  };
+  window.selectTrip = id => { store.set("activeTrip", id); render(); };
+  window.deleteTrip = id => {
+    if (!confirm("Delete this trip?")) return;
+    saveTrips(getTrips().filter(t => t.id !== id));
+    render();
+  };
+  window.addDay = () => updateTrip(t => t.days.push({ items: [] }));
+
+  function warnings(t) {
+    const w = [];
+    t.days.forEach((d, i) => d.items.forEach(it => {
+      if (it.type === "temple" && it.time >= "12:30" && it.time < "15:30")
+        w.push(`Day ${i + 1}: "${it.name}" falls in the temple's afternoon break (approx. 12:30–15:30).`);
+    }));
+    return w;
+  }
+
+  function render() {
+    const trips = getTrips();
+    const t = activeTrip();
+
+    $("tripList").innerHTML = trips.length
+      ? trips.map(x => `
+          <li class="row spread">
+            <a href="#" onclick="selectTrip('${x.id}');return false" style="${t && x.id === t.id ? "font-weight:600" : ""}">${escapeHtml(x.title)}</a>
+            <button class="btn btn-ghost btn-sm" onclick="deleteTrip('${x.id}')">🗑</button>
+          </li>`).join("")
+      : `<li class="muted">No trips yet</li>`;
+
+    ["budgetCard", "membersCard", "checklistCard"].forEach(id => $(id).hidden = !t);
+    if (!t) {
+      $("itinerary").innerHTML = `<div class="card empty">
+        <p>No trips yet. Create one, or start from a <a href="thiruvannamalai.html#templates">Thiruvannamalai template</a>.</p></div>`;
+      return;
+    }
+
+    const w = warnings(t);
+    $("itinerary").innerHTML = `
+      <div class="card">
+        <div class="row spread">
+          <div>
+            <h2>${escapeHtml(t.title)}</h2>
+            <p class="muted">${escapeHtml(t.destination)}${t.start ? " · from " + fmtDate(t.start) : ""} · ${t.travelers} traveler(s) · <span class="chip">${t.status}</span></p>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="toast('Share link copied (prototype)')">Share</button>
+        </div>
+        ${w.map(x => `<div class="notice">⚠️ ${escapeHtml(x)}</div>`).join("")}
+
+        ${t.ideas.length ? `
+          <div class="day" style="border-color:var(--warning)">
+            <h3>💡 Ideas <span class="muted">(unscheduled)</span></h3>
+            ${t.ideas.map((it, i) => itemRow(it, "ideas", i)).join("")}
+          </div>` : ""}
+
+        ${t.days.map((d, i) => `
+          <div class="day">
+            <h3>Day ${i + 1} ${t.start ? `<span class="muted">· ${fmtDate(t.start, i)}</span>` : ""}</h3>
+            ${d.items.length ? d.items.map((it, j) => itemRow(it, i, j)).join("") : `<p class="muted">Nothing planned yet.</p>`}
+            ${addItemForm(i)}
+          </div>`).join("")}
+        <button class="btn btn-outline btn-sm" onclick="addDay()">＋ Add day</button>
+      </div>`;
+
+    const spent = [...t.days.flatMap(d => d.items), ...t.ideas].reduce((s, it) => s + (Number(it.cost) || 0), 0);
+    const pct = t.budget ? Math.min(100, Math.round(spent / t.budget * 100)) : 0;
+    $("budget").innerHTML = `
+      <p><b>₹${spent.toLocaleString()}</b> planned of ₹${(t.budget || 0).toLocaleString()}</p>
+      <div style="background:var(--primary-light);border-radius:999px;height:10px">
+        <div style="width:${pct}%;background:${pct > 90 ? "var(--danger)" : "var(--primary)"};height:10px;border-radius:999px"></div>
+      </div>
+      <p class="muted" style="margin-top:.5rem">≈ ₹${t.travelers ? Math.round(spent / t.travelers).toLocaleString() : 0} per person</p>`;
+
+    const checks = store.get("checks." + t.id, {});
+    const items = ["ID proof", "Tickets & hotel vouchers", "Traditional attire for temple", "Cash for offerings", "Water bottle", "Phone charger / power bank"];
+    $("checklist").innerHTML = items.map(c => `
+      <li><label style="display:flex;gap:.5rem;align-items:center;color:var(--text);font-size:.95rem;margin:0">
+        <input type="checkbox" style="width:auto" ${checks[c] ? "checked" : ""} onchange="toggleCheck('${t.id}', '${c}', this.checked)"> ${c}
+      </label></li>`).join("");
+  }
+
+  window.toggleCheck = (tripId, c, v) => {
+    const checks = store.get("checks." + tripId, {});
+    checks[c] = v;
+    store.set("checks." + tripId, checks);
+  };
+
+  $("inviteForm").onsubmit = e => {
+    e.preventDefault();
+    const who = e.target.who.value.trim();
+    if (!who) return;
+    $("members").insertAdjacentHTML("beforeend", `<li>👤 ${escapeHtml(who)} <span class="chip">Editor · invited</span></li>`);
+    e.target.reset();
+    toast("Invite sent (prototype)");
+  };
+
+  render();
+</script>
+</body>
+</html>

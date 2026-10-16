@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Yaatra — Admin</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<main>
+  <div class="page-head">
+    <h1>Admin & Operations</h1>
+    <p>Moderate content, keep guide facts verified and publish destination alerts.</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="moderation">Moderation queue</button>
+    <button class="tab" data-tab="cms">Guide content (CMS)</button>
+    <button class="tab" data-tab="alerts">Alerts</button>
+  </div>
+
+  <div class="tab-panel active" id="moderation">
+    <div class="card">
+      <table>
+        <thead><tr><th>Item</th><th>Reason</th><th>Severity</th><th>Actions</th></tr></thead>
+        <tbody id="queue"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="tab-panel" id="cms">
+    <div class="card">
+      <p class="muted">Each fact stores a "last verified" date (spec §4.5). Items older than 90 days are flagged.</p>
+      <table>
+        <thead><tr><th>Section</th><th>Locale</th><th>Last verified</th><th>Status</th><th></th></tr></thead>
+        <tbody id="cmsRows"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="tab-panel" id="alerts">
+    <div class="grid grid-2">
+      <form class="card" id="alertForm">
+        <h2>Publish an alert</h2>
+        <div class="field"><label>Destination</label><select name="dest" id="alertDest"></select></div>
+        <div class="field"><label>Type</label>
+          <select name="type"><option>Crowd surge</option><option>Festival</option><option>Weather</option><option>Closure</option></select></div>
+        <div class="field"><label>Message</label><textarea name="msg" rows="3" required></textarea></div>
+        <button class="btn">Publish alert</button>
+      </form>
+      <div class="card"><h2>Active alerts</h2><ul class="list" id="alertList"></ul></div>
+    </div>
+  </div>
+</main>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  const queue = [
+    { item: 'Post: "Inside the sanctum" by @user123', reason: "Photography in restricted area", sev: "Medium" },
+    { item: "Review: Girivalam Path Inn", reason: "Suspected fake review", sev: "Low" },
+    { item: "Comment on Trip Story #p1", reason: "Harassment reported", sev: "High" },
+  ];
+  function renderQueue() {
+    document.getElementById("queue").innerHTML = queue.map((q, i) => `
+      <tr><td>${q.item}</td><td>${q.reason}</td>
+        <td><span class="chip ${q.sev === "High" ? "chip-red" : q.sev === "Medium" ? "chip-orange" : ""}">${q.sev}</span></td>
+        <td class="row"><button class="btn btn-sm" onclick="resolve(${i},'Approved')">Approve</button>
+          <button class="btn btn-outline btn-sm" onclick="resolve(${i},'Removed')">Remove</button></td></tr>`).join("")
+      || `<tr><td colspan="4" class="muted">Queue is empty 🎉</td></tr>`;
+  }
+  window.resolve = (i, action) => { queue.splice(i, 1); toast(action); renderQueue(); };
+  renderQueue();
+
+  const today = new Date();
+  const daysAgo = n => new Date(today - n * 86400000);
+  const cms = [
+    ["Thiruvannamalai · Darshan timings", "en", daysAgo(12)],
+    ["Thiruvannamalai · Darshan timings", "ta", daysAgo(120)],
+    ["Thiruvannamalai · History", "en", daysAgo(40)],
+    ["Thiruvannamalai · Festival calendar", "en", daysAgo(200)],
+    ["Thiruvannamalai · Girivalam route", "en", daysAgo(30)],
+  ];
+  document.getElementById("cmsRows").innerHTML = cms.map(([s, l, d]) => {
+    const stale = (today - d) / 86400000 > 90;
+    return `<tr><td>${s}</td><td>${l}</td><td>${d.toLocaleDateString()}</td>
+      <td><span class="chip ${stale ? "chip-red" : "chip-green"}">${stale ? "Needs re-verification" : "Verified"}</span></td>
+      <td><button class="btn btn-outline btn-sm" onclick="toast('Opens editor (prototype)')">Edit</button></td></tr>`;
+  }).join("");
+
+  document.getElementById("alertDest").innerHTML = DESTINATIONS.map(d => `<option>${d.name}</option>`).join("");
+  function renderAlerts() {
+    const alerts = store.get("alerts", []);
+    document.getElementById("alertList").innerHTML = alerts.map(a => `
+      <li><span class="chip chip-orange">${escapeHtml(a.type)}</span> <b>${escapeHtml(a.dest)}</b><br>${escapeHtml(a.msg)}</li>`).join("")
+      || `<li class="muted">No active alerts</li>`;
+  }
+  document.getElementById("alertForm").onsubmit = e => {
+    e.preventDefault();
+    const f = Object.fromEntries(new FormData(e.target));
+    store.set("alerts", [f, ...store.get("alerts", [])]);
+    e.target.reset();
+    toast("Alert published");
+    renderAlerts();
+  };
+  renderAlerts();
+</script>
+</body>
+</html>

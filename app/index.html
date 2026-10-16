@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Yaatra — Home</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<main>
+  <section class="hero">
+    <h1>Plan it. Live it. Share it.</h1>
+    <p>See a trip you love and make it your own in one tap.</p>
+    <div class="row" style="margin-top:1rem">
+      <a class="btn" href="plan.html">＋ Plan a trip</a>
+      <a class="btn btn-outline" href="stories.html">Share a story</a>
+      <a class="btn btn-outline" href="thiruvannamalai.html">🛕 Thiruvannamalai guide</a>
+    </div>
+  </section>
+
+  <div class="layout-side">
+    <section class="stack">
+      <h2>Latest from travelers</h2>
+      <div id="feed" class="stack"></div>
+    </section>
+
+    <aside class="stack">
+      <div class="card">
+        <h3>Your upcoming trip</h3>
+        <div id="upcoming"></div>
+      </div>
+      <div class="card">
+        <h3>Trending destinations</h3>
+        <ul class="list" id="trending"></ul>
+      </div>
+      <div class="card">
+        <h3>🌕 Next Pournami</h3>
+        <p id="pournami" class="muted"></p>
+        <a href="thiruvannamalai.html">Plan Girivalam →</a>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  document.getElementById("feed").innerHTML = POSTS.map(postCard).join("");
+
+  document.getElementById("trending").innerHTML = DESTINATIONS.map(d => `
+    <li class="row spread">
+      <span>${d.emoji} <a href="${d.guide || "destination.html?id=" + d.id}">${d.name}</a></span>
+      <span class="chip">${d.bestSeason}</span>
+    </li>`).join("");
+
+  const trip = getTrips()[0];
+  document.getElementById("upcoming").innerHTML = trip
+    ? `<p><b>${escapeHtml(trip.title)}</b><br><span class="muted">${escapeHtml(trip.destination)} · ${trip.days.length} day(s)</span></p>
+       <a class="btn btn-sm" href="plan.html?trip=${trip.id}">Open itinerary</a>`
+    : `<p class="muted">No trips yet.</p><a class="btn btn-sm" href="plan.html">Create one</a>`;
+
+  const fm = upcomingFullMoons(1)[0];
+  document.getElementById("pournami").textContent =
+    fm.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long", year: "numeric" }) + " (approx.)";
+</script>
+</body>
+</html>

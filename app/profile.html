@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Yaatra — Profile</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<main>
+  <div class="card row" style="gap:1.25rem;margin-bottom:1rem" id="profileHead"></div>
+
+  <div class="grid grid-4" id="stats" style="margin-bottom:1rem"></div>
+
+  <div class="layout-side">
+    <section>
+      <div class="tabs">
+        <button class="tab active" data-tab="posts">My posts</button>
+        <button class="tab" data-tab="trips">My trips</button>
+        <button class="tab" data-tab="settings">Settings</button>
+      </div>
+      <div class="tab-panel active stack" id="posts"></div>
+      <div class="tab-panel" id="trips"></div>
+      <div class="tab-panel" id="settings">
+        <form class="card" id="settingsForm">
+          <div class="form-row">
+            <div class="field"><label>Name</label><input name="name"></div>
+            <div class="field"><label>Home city</label><input name="city"></div>
+          </div>
+          <div class="field"><label>Bio</label><textarea name="bio" rows="2"></textarea></div>
+          <div class="form-row">
+            <div class="field"><label>Dietary preference</label>
+              <select name="diet"><option>Vegetarian</option><option>Non-vegetarian</option><option>Jain</option><option>Vegan</option></select></div>
+            <div class="field"><label>Profile visibility</label>
+              <select name="privacy"><option>Public</option><option>Followers only</option><option>Private</option></select></div>
+          </div>
+          <button class="btn">Save</button>
+        </form>
+      </div>
+    </section>
+
+    <aside class="stack">
+      <div class="card"><h3>Badges</h3><ul class="list" id="badges"></ul></div>
+      <div class="card"><h3>Interests</h3><div class="row" id="interests"></div></div>
+    </aside>
+  </div>
+</main>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  const user = { ...CURRENT_USER, ...store.get("profile", {}) };
+
+  document.getElementById("profileHead").innerHTML = `
+    <div class="avatar avatar-lg">${escapeHtml(user.name[0])}</div>
+    <div><h1>${escapeHtml(user.name)}</h1>
+      <p class="muted">${user.handle} · ${escapeHtml(user.city)} · ${escapeHtml(user.diet)}</p>
+      <p>${escapeHtml(user.bio)}</p></div>`;
+
+  const trips = getTrips();
+  const s = { ...user.stats, trips: user.stats.trips + trips.length };
+  document.getElementById("stats").innerHTML = [["Countries", s.countries], ["States", s.states], ["Cities", s.cities], ["Trips", s.trips]]
+    .map(([k, v]) => `<div class="card stat"><b>${v}</b><span class="muted">${k}</span></div>`).join("");
+
+  document.getElementById("badges").innerHTML = user.badges.map(b => `<li>${b}</li>`).join("");
+  document.getElementById("interests").innerHTML = user.interests.map(i => `<span class="chip">${i}</span>`).join("");
+
+  const mine = store.get("myPosts", []);
+  document.getElementById("posts").innerHTML = mine.map(postCard).join("")
+    || `<div class="card empty">You haven't shared anything yet. <a href="stories.html">Share your first story</a></div>`;
+
+  document.getElementById("trips").innerHTML = trips.length
+    ? `<div class="grid grid-3">${trips.map(t => `
+        <a class="card" href="plan.html?trip=${t.id}" style="color:inherit;text-decoration:none">
+          <h3>${escapeHtml(t.title)}</h3><p class="muted">${escapeHtml(t.destination)} · ${t.days.length} day(s)</p><span class="chip">${t.status}</span>
+        </a>`).join("")}</div>`
+    : `<div class="card empty">No trips yet. <a href="plan.html">Plan one</a></div>`;
+
+  const form = document.getElementById("settingsForm");
+  ["name", "city", "bio", "diet"].forEach(k => form[k].value = user[k]);
+  form.onsubmit = e => {
+    e.preventDefault();
+    const f = Object.fromEntries(new FormData(form));
+    store.set("profile", f);
+    toast("Profile saved");
+    setTimeout(() => location.reload(), 600);
+  };
+</script>
+</body>
+</html>

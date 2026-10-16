@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Yaatra — Thiruvannamalai</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<main>
+  <section class="hero">
+    <h1>🛕 Thiruvannamalai — Arunachaleswarar Temple</h1>
+    <p>One of the Pancha Bhoota Sthalams, where Lord Shiva is worshipped as the <b>Agni Lingam</b> (element of fire), at the foot of the sacred Arunachala hill.</p>
+    <div class="row">
+      <span class="chip">Tamil Nadu</span><span class="chip">Pancha Bhoota Sthalam · Fire</span><span class="chip">Girivalam · ~14 km</span>
+    </div>
+  </section>
+
+  <div class="notice">Timings, dates and distances shown here are indicative. Please confirm with the temple administration (HR&CE, Govt. of Tamil Nadu) before your visit.</div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="overview">Overview & History</button>
+    <button class="tab" data-tab="visit">Plan your visit</button>
+    <button class="tab" data-tab="girivalam">Girivalam</button>
+    <button class="tab" data-tab="festivals">Festivals</button>
+    <button class="tab" data-tab="nearby">Nearby & Stays</button>
+    <button class="tab" data-tab="templates">Trip templates</button>
+  </div>
+
+  <!-- Overview & History -->
+  <div class="tab-panel active" id="overview">
+    <div class="grid grid-2">
+      <div class="card">
+        <h2>About the temple</h2>
+        <p>The temple honours Lord Shiva as <b>Arunachaleswarar (Annamalaiyar)</b> and his consort Parvati as <b>Unnamulai Amman</b>. The Arunachala hill itself is revered as a form of Shiva.</p>
+        <p>It is one of the largest temple complexes in India, spread over roughly 25 acres with several enclosures (prakarams) and tall gateway towers. The eastern <b>Rajagopuram</b> rises about 66 m in 11 tiers.</p>
+        <p>The temple is praised in the Tevaram hymns of the Nayanmar saints, and Manikkavasagar's <i>Thiruvempavai</i> is said to have been composed here.</p>
+      </div>
+      <div class="card">
+        <h2>History timeline</h2>
+        <ul class="list timeline" id="history"></ul>
+      </div>
+      <div class="card">
+        <h2>🔥 The column of fire</h2>
+        <p>Brahma and Vishnu argued over who was supreme. Shiva appeared between them as an endless pillar of fire. Vishnu, as a boar, dug down to find its base; Brahma, as a swan, flew up to find its top. Neither succeeded. Shiva then settled as the Arunachala hill, and the hilltop flame of Karthigai Deepam recalls this moment.</p>
+      </div>
+      <div class="card">
+        <h2>🌗 Ardhanarishvara</h2>
+        <p>Parvati performed penance here, after which Shiva granted her the left half of his body — the form known as Ardhanarishvara, celebrated during Karthigai Deepam.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Plan your visit -->
+  <div class="tab-panel" id="visit">
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="row spread"><h2>Darshan timings</h2><span id="openNow"></span></div>
+        <table><tbody id="timings"></tbody></table>
+      </div>
+      <div class="card">
+        <h2>Crowd forecast (today)</h2>
+        <div class="bars" id="crowd"></div>
+        <div class="row spread muted"><span>5 AM</span><span>12 PM</span><span>9 PM</span></div>
+        <p class="muted" style="margin-top:.5rem">Busiest on Pournami, Karthigai Deepam, Maha Shivaratri, Mondays and weekends.</p>
+      </div>
+      <div class="card">
+        <h2>Suggested route inside the temple</h2>
+        <ol>
+          <li>Enter via the eastern Rajagopuram</li>
+          <li>Thousand-pillared mandapam</li>
+          <li>Patala Lingam shrine (where Ramana Maharshi meditated)</li>
+          <li>Sivaganga theertham (temple tank)</li>
+          <li>Main sanctum — Arunachaleswarar</li>
+          <li>Unnamulai Amman shrine</li>
+        </ol>
+      </div>
+      <div class="card">
+        <h2>Etiquette & tips</h2>
+        <ul class="list" id="etiquette"></ul>
+        <p class="muted" style="margin-top:.5rem">♿ Ask at the entrance about wheelchairs and the senior-citizen queue.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Girivalam -->
+  <div class="tab-panel" id="girivalam">
+    <div class="grid grid-2">
+      <div class="card">
+        <h2>The 14 km walk around Arunachala</h2>
+        <p>Pilgrims walk around the hill clockwise, usually barefoot, especially on full-moon (Pournami) nights. Eight Lingams — the <b>Ashta Lingams</b> — mark the directions along the path.</p>
+        <ul class="list" id="lingams"></ul>
+      </div>
+      <div class="stack">
+        <div class="card">
+          <h2>🌕 Upcoming Pournami dates</h2>
+          <p class="muted">Approximate — verify exact tithi times with a panchangam.</p>
+          <ul class="list" id="moons"></ul>
+        </div>
+        <div class="card">
+          <h2>Safety tips</h2>
+          <ul>
+            <li>Start after sunset to avoid the heat; carry water</li>
+            <li>Walk on the left; rest at the mandapams on the way</li>
+            <li>Share live location with family; agree a meeting point</li>
+            <li>Allow 3–5 hours at a relaxed pace</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Festivals -->
+  <div class="tab-panel" id="festivals">
+    <div class="grid grid-3" id="festivalList"></div>
+  </div>
+
+  <!-- Nearby & stays -->
+  <div class="tab-panel" id="nearby">
+    <h2>Spiritual & nearby places</h2>
+    <div class="grid grid-3" id="nearbyList" style="margin-bottom:1.5rem"></div>
+    <div class="card row spread">
+      <div><h3>Stays, food & travel</h3><p class="muted">Hotels near the temple, vegetarian meals, and bus/train/car options.</p></div>
+      <a class="btn" href="destination.html?id=thiruvannamalai">View hotels, food & travel →</a>
+    </div>
+  </div>
+
+  <!-- Templates -->
+  <div class="tab-panel" id="templates">
+    <p>Start with a ready-made plan and adjust it in the trip planner.</p>
+    <div class="grid grid-3" id="templateList"></div>
+  </div>
+</main>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  const $ = id => document.getElementById(id);
+
+  $("history").innerHTML = TVM.history.map(h => `<li><b>${h.period}</b><br><span class="muted">${h.text}</span></li>`).join("");
+  $("timings").innerHTML = TVM.timings.map(t => `<tr><td>${t.slot}</td><td><b>${t.time}</b></td></tr>`).join("");
+  $("etiquette").innerHTML = TVM.etiquette.map(e => `<li>✔️ ${e}</li>`).join("");
+
+  const now = new Date(), mins = now.getHours() * 60 + now.getMinutes();
+  const open = (mins >= 330 && mins < 750) || (mins >= 930 && mins < 1290);
+  $("openNow").innerHTML = open ? '<span class="chip chip-green">Open now</span>' : '<span class="chip chip-red">Closed now</span>';
+
+  // Mock hourly crowd levels 5 AM – 9 PM
+  const crowd = [60, 85, 70, 55, 50, 45, 40, 20, 15, 15, 45, 60, 75, 90, 95, 80, 50];
+  $("crowd").innerHTML = crowd.map((v, i) => `<div class="${v >= 75 ? "high" : ""}" style="height:${v}%" title="${i + 5}:00 — ${v >= 75 ? "High" : v >= 45 ? "Medium" : "Low"}"></div>`).join("");
+
+  $("lingams").innerHTML = TVM.lingams.map((l, i) => `<li class="row spread"><span>${i + 1}. ${l.name}</span><span class="chip">${l.dir}</span></li>`).join("");
+  $("moons").innerHTML = upcomingFullMoons(6).map(d => `
+    <li class="row spread"><span>${d.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short", year: "numeric" })}</span>
+    <button class="btn btn-outline btn-sm" onclick="toast('Reminder set (prototype)')">🔔 Remind me</button></li>`).join("");
+
+  const crowdChip = c => `<span class="chip ${c === "Extreme" || c === "Very high" ? "chip-red" : "chip-orange"}">${c} crowd</span>`;
+  $("festivalList").innerHTML = TVM.festivals.map(f => `
+    <div class="card"><h3>${f.name === "Karthigai Deepam" ? "🪔 " : ""}${f.name}</h3>
+      <p class="muted">${f.when}</p><p>${f.note}</p>${crowdChip(f.crowd)}</div>`).join("");
+
+  $("nearbyList").innerHTML = TVM.nearby.map(n => `
+    <div class="card"><div class="row spread"><h3>${n.emoji} ${n.name}</h3></div>
+      <p class="muted">${n.dist}</p>
+      <button class="btn btn-outline btn-sm" onclick='addToTrip(${JSON.stringify({ name: n.name, destination: "Thiruvannamalai" })})'>＋ Add to trip</button></div>`).join("");
+
+  $("templateList").innerHTML = TVM.templates.map((t, i) => `
+    <div class="card">
+      <div class="card-media">${t.emoji}</div>
+      <h3>${t.title}</h3>
+      <p class="muted">${t.days} day(s) · ${t.itinerary.flat().length} stops</p>
+      <button class="btn btn-sm" onclick="useTemplate(${i})">Use this plan</button>
+    </div>`).join("");
+
+  window.useTemplate = i => {
+    const t = TVM.templates[i];
+    const trip = createTrip({
+      title: t.title, destination: "Thiruvannamalai", start: "", days: t.days, travelers: 2, budget: 8000,
+      itinerary: t.itinerary.map(day => day.map(it => ({ id: uid(), cost: 0, ...it }))),
+    });
+    location.href = "plan.html?trip=" + trip.id;
+  };
+
+  // Deep-link to a tab, e.g. thiruvannamalai.html#templates
+  document.addEventListener("DOMContentLoaded", () => {
+    if (location.hash) document.querySelector(`.tab[data-tab="${location.hash.slice(1)}"]`)?.click();
+  });
+</script>
+</body>
+</html>

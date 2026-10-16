@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Yaatra — Stories</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<main>
+  <div class="page-head">
+    <h1>Stories & Experiences</h1>
+    <p>Read real trips from other travelers and share your own photos and tips.</p>
+  </div>
+
+  <div class="layout-side">
+    <section>
+      <div class="tabs">
+        <button class="tab active" data-tab="all">All</button>
+        <button class="tab" data-tab="stories">Trip Stories</button>
+        <button class="tab" data-tab="following">Following</button>
+      </div>
+      <div class="tab-panel active stack" id="all"></div>
+      <div class="tab-panel stack" id="stories"></div>
+      <div class="tab-panel" id="following"><div class="card empty">Follow travelers to see their posts here.</div></div>
+    </section>
+
+    <aside class="card">
+      <h2>Share an experience</h2>
+      <form id="postForm">
+        <div class="field"><label>Type</label>
+          <select name="type">
+            <option value="post">Photo post</option>
+            <option value="story">Trip Story</option>
+            <option value="tip">Tip</option>
+            <option value="review">Review</option>
+          </select>
+        </div>
+        <div class="field"><label>Title</label><input name="title" required placeholder="Sunrise at Arunachala"></div>
+        <div class="field"><label>Place</label><input name="place" required placeholder="Tag a place" list="placeList"></div>
+        <datalist id="placeList"></datalist>
+        <div class="field"><label>Your experience</label><textarea name="body" rows="4" required></textarea></div>
+        <div class="field"><label>Photos</label><input type="file" name="photos" accept="image/*" multiple></div>
+        <p class="muted">Location data (EXIF) is removed from photos before publishing.</p>
+        <details class="field">
+          <summary class="muted" style="cursor:pointer">Add practical details (optional)</summary>
+          <div class="form-row" style="margin-top:.5rem">
+            <input name="cost" placeholder="Cost">
+            <input name="duration" placeholder="Duration">
+            <select name="crowd"><option>Low</option><option>Medium</option><option>High</option></select>
+          </div>
+        </details>
+        <button class="btn" type="submit">Publish</button>
+      </form>
+    </aside>
+  </div>
+</main>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  const placeNames = Object.values(PLACES).flatMap(p => [...p.sights, ...p.hotels, ...p.food].map(x => x.name));
+  document.getElementById("placeList").innerHTML = placeNames.map(n => `<option value="${escapeHtml(n)}">`).join("");
+
+  function render() {
+    const posts = [...store.get("myPosts", []), ...POSTS];
+    document.getElementById("all").innerHTML = posts.map(postCard).join("");
+    document.getElementById("stories").innerHTML = posts.filter(p => p.type === "story").map(postCard).join("")
+      || `<div class="card empty">No trip stories yet.</div>`;
+  }
+
+  document.getElementById("postForm").onsubmit = e => {
+    e.preventDefault();
+    const f = Object.fromEntries(new FormData(e.target));
+    const mine = store.get("myPosts", []);
+    mine.unshift({
+      id: uid(), type: f.type, author: CURRENT_USER.name, place: f.place, when: "just now",
+      emoji: { story: "📖", tip: "💡", review: "⭐" }[f.type] || "📷",
+      title: f.title, body: f.body, likes: 0, comments: 0,
+      details: f.cost || f.duration ? { cost: f.cost || "—", duration: f.duration || "—", crowd: f.crowd } : null,
+    });
+    store.set("myPosts", mine);
+    e.target.reset();
+    toast("Published!");
+    render();
+  };
+
+  render();
+</script>
+</body>
+</html>
