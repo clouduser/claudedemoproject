@@ -12,7 +12,9 @@ const NAV = [
 ];
 
 function renderShell() {
-  const current = location.pathname.split("/").pop() || "index.html";
+  // Works with and without ".html" (Vercel cleanUrls serves /plan for plan.html)
+  let current = location.pathname.split("/").pop() || "index.html";
+  if (!current.endsWith(".html")) current += ".html";
   const header = document.createElement("header");
   header.className = "site-header";
   header.innerHTML = `
